@@ -53,7 +53,7 @@ class LogisticRegression(BaseModel):
             fit_intercept: bool = True,
             alpha: float = 0.01,
             epochs: int = 100,
-            eps: float = 0.1):
+            eps: float = 1e-6):
         self.intercept = None
         self.theta = None
         self.means = None
@@ -67,13 +67,15 @@ class LogisticRegression(BaseModel):
         self.eps = eps
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> None:
-        m, d = X.shape
+        _, d = X.shape
         y_transformed = (y.copy() - 2) // 2
         self.theta = np.zeros(d).reshape(-1, 1)
         self.intercept = 0
         if (self.standardize):
             self.means = np.mean(X, axis=0)
             self.stds = np.std(X, axis=0)
+            if np.any(self.stds == 0):
+                self.stds = np.ones(d)
         else:
             self.means = np.zeros(d)
             self.stds = np.ones(d)
@@ -84,22 +86,29 @@ class LogisticRegression(BaseModel):
             y_pred = sigmoid(z)
 
             dintercept, dtheta = self.grad.calculate_gradient(
-                self.regularization, X_scaled, self.theta, self.fit_intercept, y_pred, y_transformed
+                self.regularization, self.alpha, X_scaled, self.theta, self.intercept, y_pred, y_transformed
             )
             if not self.fit_intercept:
                 dintercept = 0
-            self.intercept -= (self.alpha) * dintercept
-            self.theta -= (self.alpha / m) * dtheta
-            if np.linalg.norm(dtheta) < self.eps:
+            self.intercept -= dintercept
+            self.theta -= dtheta
+            if np.linalg.norm(np.concatenate(([dintercept], dtheta.ravel()))) < self.eps:
                 break
 
     '''
     Hardcoded values for y {2, 4}
     '''
     def predict(self, X: np.ndarray) -> np.ndarray:
-        z = self.intercept + X @ self.theta
+        X_scaled = (X.copy() - self.means) / self.stds
+        z = self.intercept + X_scaled @ self.theta
         y_pred = sigmoid(z)
         y_pred = np.where(y_pred > 0.5, 4, 2)
+        return y_pred.reshape(-1, 1)
+
+    def predict_proba(self, X: np.ndarray) -> np.ndarray:
+        X_scaled = (X.copy() - self.means) / self.stds
+        z = self.intercept + X_scaled @ self.theta
+        y_pred = sigmoid(z)
         return y_pred.reshape(-1, 1)
 
     def reset(self) -> None:
@@ -110,7 +119,8 @@ class LogisticRegression(BaseModel):
 
     def binary_cross_entropy(
             self, X: np.ndarray, y: np.ndarray) -> float:
-        y_pred = sigmoid(X @ self.theta + self.intercept)
+        X_scaled = (X.copy() - self.means) / self.stds
+        y_pred = sigmoid(X_scaled @ self.theta + self.intercept)
         y_transformed = (y.copy() - 2) // 2
         return -np.mean(y_transformed * np.log(y_pred) + (1 - y_transformed) * np.log(1 - y_pred))
 
