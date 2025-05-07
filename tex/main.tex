@@ -98,14 +98,14 @@ Mamy 9 cech -- $x_1,\dots, x_9$ i zmienną binarną $y$. Pierwsze co zrobiłem t
 \begin{figure}
     \centering
     \includegraphics[width=0.9\textwidth]{pairplot.png}
-    \caption{Pary zmiennych i $y$}
+    \caption{Pary cech i $y$}
     \label{fig:pair}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{parallel.png}
-    \caption{Wykres równoległych współrzędnych}
+    \caption{Wykres równoległych cech}
     \label{fig:parallel}
 \end{figure}
 
@@ -151,7 +151,7 @@ Z racji tego, że badamy złośliwość raka zależy nam na wysokiej czułości.
     &\texttt{Naive Bayes average precision: } 0.9413 && \\
     &\texttt{Naive Bayes average sensitivity: } 0.9835
 \end{flalign*}
-Bazowy model jest naprawdę dobry, ale co jeśli przesunęli byśmy granicę decyzyjną do $p(y=4|x) > \frac{1}{5}$.
+Bazowy model jest naprawdę dobry, ale co jeśli przesunęli byśmy granicę decyzyjną do $\hat{y} = 4$ jeśli $p(y=4|x) > \frac{1}{5}$.
 \begin{flalign*}
     &\texttt{Naive Bayes average accuracy: } 0.9739 && \\
     &\texttt{Naive Bayes average precision: } 0.9394 && \\
@@ -208,7 +208,7 @@ Wyszedłem z założeniem, że chce użyć następującego modelu: $\theta_0$ + 
     &\texttt{Logistic regression binary cross entropy test: } 0.3863 && \\
     &\texttt{Logistic regression binary cross entropy train: } 0.4197
     \end{flalign*}
-    \item Jako następny rozwiązałem problem $\theta_0$. Gradient nie mógł wejść w minimum, przez to, że pochodna po $\theta_0$ była bardzo mała w stosunku do innych pochodnych (co ma sens, ponieważ jest ona postaci $\frac{1}{m}\sum_{i=1}^{m}{\sigma(\theta^T x^{(i)} + \theta_0) - y^{(i)}}$). Najpierw dałem jej wyższą wagę -- przemnożyłem przez $m$ -- to już znacznie poprawiło zbieżność. Potem spróbowałem znormalizować gradient i to też poprawiało zbieżność. Z tych 2 pomysłów drugi wydaje się poprawniejszy formalnie, więc zostałem przy nim na chwilę.
+    \item Jako następny rozwiązałem problem $\theta_0$. Gradient nie mógł wejść w minimum, przez to, że pochodna po $\theta_0$ była bardzo mała w stosunku do innych pochodnych (co ma sens, ponieważ jest ona postaci $\frac{1}{m}\sum_{i=1}^{m}{\sigma(\theta^T x^{(i)} + \theta_0) - y^{(i)}}$. Najpierw dałem jej wyższą wagę -- przemnożyłem przez $m$ -- to już znacznie poprawiło zbieżność. Potem spróbowałem znormalizować gradient i to też poprawiało zbieżność. Z tych 2 pomysłów drugi wydaje się poprawniejszy formalnie, więc zostałem przy nim na chwilę.
     \begin{flalign*}
     &\texttt{Logistic regression binary cross entropy test: } 0.0657 && \\
     &\texttt{Logistic regression binary cross entropy train: } 0.1035 && \\
@@ -218,10 +218,10 @@ Wyszedłem z założeniem, że chce użyć następującego modelu: $\theta_0$ + 
     &\texttt{Logistic regression precision: } 0.9500 && \\
     &\texttt{Logistic regression sensitivity: } 0.9620
     \end{flalign*}
-
+    
     \item Teraz nastąpił przełom, ponieważ naprawiłem standaryzację -- zapomniałem zastosować skalowania w \texttt{predict()}. Otrzymujemy zawrotnie szybką zbieżność, zszedłem z 500 epok do 10.
 
-    \item Odpuściłem już L2 patrząc na wyniki.
+    \item Odpuściłem już L2 patrząc na wyniki, normalizacja gradientu również przestała być potrzebna.
 \end{enumerate}
 Podsumowując kończymy z modelem: GD$(\alpha=0.01, \mathrm{epochs}=10)$ + standaryzacja (ta ze średnią i odchyleniem) + $\theta_0$. \\
 Teraz czas na wyniki.
