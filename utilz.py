@@ -1,6 +1,11 @@
 import numpy as np
 import time
 from classification import BaseModel
+from scipy.stats import chi2_contingency
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 def split_data(data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     X = data[:, :-1]
@@ -41,3 +46,20 @@ def divide_dataset(
     np.random.shuffle(test)
 
     return train, val, test
+
+def chisq(df: pd.DataFrame) -> None:
+    columns = df.columns
+
+    chi2_matrix = pd.DataFrame(np.zeros((len(columns), len(columns))), index=columns, columns=columns)
+
+    for i, col1 in enumerate(columns):
+        for j, col2 in enumerate(columns):
+            if i != j:
+                contingency_table = pd.crosstab(df[col1], df[col2])
+                chi2, _, _, _ = chi2_contingency(contingency_table)
+                chi2_matrix.loc[col1, col2] = chi2
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(chi2_matrix, annot=True, cmap='coolwarm', fmt='.2f')
+    plt.title('Chi-Square Heatmap')
+    plt.show()
