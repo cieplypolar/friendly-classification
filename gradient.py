@@ -32,6 +32,9 @@ class GradientDescent(BaseGradient):
         intercept_gradient = np.sum(error)
         return intercept_gradient * (alpha / m), gradient * (alpha / m)
 
+'''
+Weighted means * m :)
+'''
 class GradientDescentWithWeightedIntercept(BaseGradient):
     def calculate_gradient(
         self,
